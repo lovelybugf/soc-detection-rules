@@ -1,0 +1,24 @@
+# NOT a SigmaHQ rule. Written for the Agentic SOC project (D66). The numbers in soc_pattern are project defaults, not measured ones.
+title: Process Started From A Listed File Hash (SOC pattern rule)
+id: 3f6c1d52-8a0e-4c41-9a53-5b2f7e1d0a07
+status: experimental
+description: A process-creation event (Sysmon 1) whose SHA256 hash is in the indicator folder (IOC_FEED_DIR).
+author: Agentic SOC project
+date: 2026-10-30
+tags:
+    - attack.execution
+    - attack.t1204.002
+logsource:
+    product: windows
+    service: sysmon
+detection:
+    selection:
+        EventID: 1
+    condition: selection
+falsepositives:
+    - A hash of a legitimate tool that was listed by mistake
+level: high
+soc_pattern:
+    kind: ioc
+    field: hash
+    ioc_type: sha256

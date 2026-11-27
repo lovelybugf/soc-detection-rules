@@ -1,0 +1,28 @@
+# NOT a SigmaHQ rule. Written for the Agentic SOC project (D66). The numbers in soc_pattern are project defaults, not measured ones.
+title: A Process That Never Opened LSASS Before Opens It (SOC pattern rule)
+id: 3f6c1d52-8a0e-4c41-9a53-5b2f7e1d0a04
+status: experimental
+description: A process-access event (Sysmon 10) on lsass.exe from an image that did not open it in the logs of the last 14 days. It stays quiet until those logs go back at least 7 days, so a lab that replays datasets a few minutes apart never alerts with it.
+author: Agentic SOC project
+date: 2026-10-30
+tags:
+    - attack.credential_access
+    - attack.t1003.001
+logsource:
+    product: windows
+    service: sysmon
+detection:
+    selection:
+        EventID: 10
+        TargetImage|endswith: '\lsass.exe'
+    condition: selection
+falsepositives:
+    - Security or backup software that reads LSASS the first time it is installed
+level: high
+signal: true
+soc_pattern:
+    kind: first_seen
+    entity: [source_image]
+    baseline_days: 14
+    min_baseline_events: 1000
+    min_baseline_age_days: 7

@@ -1,0 +1,24 @@
+# NOT a SigmaHQ rule. Written for the Agentic SOC project (D66). The numbers in soc_pattern are project defaults, not measured ones.
+title: DNS Query For A Listed Domain (SOC pattern rule)
+id: 3f6c1d52-8a0e-4c41-9a53-5b2f7e1d0a06
+status: experimental
+description: A DNS query (Sysmon 22) for a domain that is in the indicator folder (IOC_FEED_DIR).
+author: Agentic SOC project
+date: 2026-10-30
+tags:
+    - attack.command_and_control
+    - attack.t1071.004
+logsource:
+    product: windows
+    service: sysmon
+detection:
+    selection:
+        EventID: 22
+    condition: selection
+falsepositives:
+    - A domain on the list that is legitimate for the organisation
+level: high
+soc_pattern:
+    kind: ioc
+    field: domain
+    ioc_type: domain

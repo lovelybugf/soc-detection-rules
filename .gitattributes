@@ -1,0 +1,2 @@
+# The lock's sha256 is taken over LF text, and Opsis compares it the same way
+* text=auto eol=lf

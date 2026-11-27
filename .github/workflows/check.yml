@@ -1,0 +1,24 @@
+name: Check rules
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.4.0
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: "3.12.14"
+      - run: pip install -r requirements.txt
+      - name: Every rule is valid and compiles
+        run: python scripts/check_rules.py
+      - name: The SigmaHQ files are what the pinned commit holds
+        run: python scripts/sync_sigmahq.py --check

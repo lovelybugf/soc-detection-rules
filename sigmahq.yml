@@ -1,0 +1,11 @@
+# The SigmaHQ rules this repository carries, and the SigmaHQ commit they come from.
+# Edit this file, then run: python scripts/sync_sigmahq.py   (add --ref master to move to the newest commit)
+# Each path is relative to https://github.com/SigmaHQ/sigma. The file lands in rules/ under its own name, verbatim.
+repository: SigmaHQ/sigma
+commit: ca24243a6e3f94353a54176f83c4c3b7f579224a
+rules:
+  - rules/windows/process_creation/proc_creation_win_rundll32_process_dump_via_comsvcs.yml
+  - rules/windows/process_creation/proc_creation_win_powershell_encode.yml
+  - rules/windows/builtin/system/service_control_manager/win_system_susp_service_installation_script.yml
+  - rules/windows/process_creation/proc_creation_win_wmiprvse_spawns_powershell.yml
+  - rules/windows/process_creation/proc_creation_win_winrm_remote_powershell_session_process.yml

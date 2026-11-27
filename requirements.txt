@@ -1,0 +1,5 @@
+# Same versions as Opsis (apps/server/requirements.lock): a rule that compiles here compiles in the detector's backend.
+pyyaml==6.0.3
+pysigma==1.2.0
+pysigma-backend-elasticsearch==2.1.0
+pyparsing==3.2.5

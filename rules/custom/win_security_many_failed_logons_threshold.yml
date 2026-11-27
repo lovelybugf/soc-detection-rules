@@ -1,0 +1,28 @@
+# NOT a SigmaHQ rule. Written for the Agentic SOC project (D35 item 5): SigmaHQ's own brute force rules are Sigma
+# correlation (count) rules, which the Lucene backend does not support. This is a plain Sigma detection rule plus the
+# project's `soc_threshold` key, which the detector turns into an aggregation: an alert only when one source address has
+# `count` or more failed logons (4625) on one host inside one `window_seconds` window.
+title: Many Failed Windows Logons From One Source (SOC threshold rule)
+id: a2b0ecd8-1b08-43cc-9c0c-e548a0c57b57
+status: experimental
+description: Five or more failed Windows logons (Security 4625) from the same source address to the same host within five minutes, a password guessing or password spraying pattern. The threshold is a project default, not a measured one.
+author: Agentic SOC project
+date: 2026-10-05
+tags:
+    - attack.credential_access
+    - attack.t1110
+logsource:
+    product: windows
+    service: security
+detection:
+    selection:
+        EventID: 4625
+    condition: selection
+falsepositives:
+    - A service or a person with an expired password retrying from one machine
+level: medium
+soc_threshold:
+    count: 5
+    window_seconds: 300
+    group_by:
+        - source.ip

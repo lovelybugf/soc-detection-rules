@@ -1,0 +1,24 @@
+# NOT a SigmaHQ rule. Written for the Agentic SOC project (D66). The numbers in soc_pattern are project defaults, not measured ones.
+title: Network Connection To A Listed Address (SOC pattern rule)
+id: 3f6c1d52-8a0e-4c41-9a53-5b2f7e1d0a05
+status: experimental
+description: A network connection (Sysmon 3) whose destination address is in the indicator folder (IOC_FEED_DIR).
+author: Agentic SOC project
+date: 2026-10-30
+tags:
+    - attack.command_and_control
+    - attack.t1071
+logsource:
+    product: windows
+    service: sysmon
+detection:
+    selection:
+        EventID: 3
+    condition: selection
+falsepositives:
+    - An indicator that was a shared address, or that has since been given to someone else
+level: high
+soc_pattern:
+    kind: ioc
+    field: dest_ip
+    ioc_type: ip

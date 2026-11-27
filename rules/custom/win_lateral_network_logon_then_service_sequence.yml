@@ -1,0 +1,28 @@
+# NOT a SigmaHQ rule. Written for the Agentic SOC project (D66). The numbers in soc_pattern are project defaults, not measured ones.
+title: Network Logon Followed By A New Service On The Same Host (SOC pattern rule)
+id: 3f6c1d52-8a0e-4c41-9a53-5b2f7e1d0a02
+status: experimental
+description: A network logon (Security 4624, logon type 3) and, within ten minutes on the same host, a service installed (System 7045), which is the order in which remote execution tools such as PsExec leave their traces.
+author: Agentic SOC project
+date: 2026-10-30
+tags:
+    - attack.lateral_movement
+    - attack.t1021.002
+    - attack.t1569.002
+logsource:
+    product: windows
+detection:
+    network_logon:
+        EventID: 4624
+        LogonType: 3
+    new_service:
+        EventID: 7045
+    condition: network_logon or new_service
+falsepositives:
+    - Software deployment that logs on over the network and installs a service
+level: medium
+soc_pattern:
+    kind: sequence
+    maxspan_seconds: 600
+    group_by: [host]
+    steps: [network_logon, new_service]
