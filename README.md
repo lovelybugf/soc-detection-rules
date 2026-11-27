@@ -10,6 +10,9 @@ rules/rules.lock.json    path and sha256 of each SigmaHQ file, written by the sy
 rules/custom/*.yml       the project's own rules (plain Sigma, plus the Opsis keys soc_threshold / soc_pattern / signal)
 scripts/sync_sigmahq.py  pulls the selection from SigmaHQ and rewrites the lock
 scripts/check_rules.py   validates every rule; CI runs it on each push and pull request
+tests/*.yml              sample events per rule, and whether the rule must alert on them
+scripts/test_rules.py    runs those tests in a real Elasticsearch; CI runs it on each push and pull request
+scripts/pull_from_opsis.py  copies the rules written on an Opsis server's Detection rules page into rules/custom/
 ```
 
 ## Set up
@@ -27,13 +30,40 @@ pip install -r requirements.txt
 3. `python scripts/check_rules.py`, read the diff, commit, open a pull request.
 
 Only plain Sigma detection rules work. Sigma correlation rules are refused by the Lucene backend Opsis uses; write those as a custom
-rule with `soc_threshold` or `soc_pattern`. The detector reads Windows logs (Mordor replay and Winlogbeat); a Linux rule compiles but
-matches nothing until Opsis has a Linux log source.
+rule with `soc_threshold` or `soc_pattern`. The detector reads the indices of its `DETECTOR_SOURCES`: Windows logs (Mordor replay and
+Winlogbeat) and, on a server that has one, Linux logs in `logs-linux-*` (Filebeat on /var/log/secure, parsed by the Opsis ingest pipeline
+`soc-linux` into `event.action`, `event.outcome`, `user.name`, `source.ip`). Linux rules use those ECS field names.
 
 ## Add a custom rule
 
 Put it in `rules/custom/` with a new UUID as `id`. To change a SigmaHQ rule, copy it there under a new id and change the copy; the check
 refuses an edited SigmaHQ file.
+
+## Test a rule on sample logs
+
+Every new or changed rule should come with a file in `tests/`: a few events it must alert on and a few it must not (see the header of
+`scripts/test_rules.py` for the format, and `tests/` for examples). Use real events where you have them, with host names, addresses and
+user names replaced (documentation ranges 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24).
+
+```bash
+docker run -d --name rules-es -p 127.0.0.1:9200:9200 -e discovery.type=single-node -e xpack.security.enabled=false   -e ES_JAVA_OPTS="-Xms512m -Xmx512m" elasticsearch:8.13.0
+python scripts/test_rules.py                # --es URL for another cluster; --strict fails when a rule has no test
+```
+
+The script makes a throwaway index per case with the mapping Opsis uses, runs the rule the way the detector does (plain rules: one match is
+an alert; `soc_threshold`: `count` events of one group within `window_seconds`) and deletes the index. `soc_pattern` rules (sequence,
+distinct, first_seen, ioc) need the detector itself and are reported as skipped. It lists the rules that have no test yet.
+
+## Bring a rule written on the Opsis page into this repository
+
+Rules made on the Detection rules page live only in that server's database. To keep one here:
+
+```bash
+OPSIS_PASSWORD=... python scripts/pull_from_opsis.py --url http://<opsis> --user <admin> --dry-run   # then without --dry-run
+```
+
+It writes each enabled custom rule to `rules/custom/` (a rule whose id is already here updates that file). Review the diff, add a test, open a
+pull request. Once the server runs a tag that has the rule, delete the page's copy so the detector does not run it twice.
 
 ## Release
 

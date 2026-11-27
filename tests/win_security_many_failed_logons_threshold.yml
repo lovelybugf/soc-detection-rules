@@ -1,0 +1,23 @@
+rule: custom/win_security_many_failed_logons_threshold.yml
+source: Written for this test, in the shape of Security 4625 events as Opsis stores them (field names of the Mordor export).
+cases:
+  - name: six failed logons from one address within a minute
+    expect: alert
+    repeat: {count: 6, every_seconds: 8}
+    events:
+      - {"@timestamp": "2026-11-27T03:00:00Z", "EventID": 4625, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "198.51.100.50"},
+         "TargetUserName": "administrator", "LogonType": "3"}
+  - name: six failed logons from six addresses
+    expect: no_alert
+    events:
+      - {"@timestamp": "2026-11-27T03:00:00Z", "EventID": 4625, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "203.0.113.11"}}
+      - {"@timestamp": "2026-11-27T03:00:05Z", "EventID": 4625, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "203.0.113.12"}}
+      - {"@timestamp": "2026-11-27T03:00:10Z", "EventID": 4625, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "203.0.113.13"}}
+      - {"@timestamp": "2026-11-27T03:00:15Z", "EventID": 4625, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "203.0.113.14"}}
+      - {"@timestamp": "2026-11-27T03:00:20Z", "EventID": 4625, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "203.0.113.15"}}
+      - {"@timestamp": "2026-11-27T03:00:25Z", "EventID": 4625, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "203.0.113.16"}}
+  - name: six successful logons (4624) from one address
+    expect: no_alert
+    repeat: {count: 6, every_seconds: 8}
+    events:
+      - {"@timestamp": "2026-11-27T03:00:00Z", "EventID": 4624, "Channel": "Security", "host": {"name": "dc01"}, "source": {"ip": "198.51.100.50"}}

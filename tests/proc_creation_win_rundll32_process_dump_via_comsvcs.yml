@@ -1,0 +1,28 @@
+rule: proc_creation_win_rundll32_process_dump_via_comsvcs.yml
+source: >-
+  The two matching events of the Mordor (OTRF Security-Datasets) scenario psh_lsass_memory_dump_comsvcs, as Opsis stores them in
+  logs-mordor-* (only the fields the rule reads, plus a few for context). The no_alert cases are written for this test.
+cases:
+  - name: Sysmon process creation of rundll32 comsvcs.dll MiniDump (Mordor)
+    expect: alert
+    events:
+      - {"@timestamp": "2020-10-18T23:50:05.917Z", "EventID": 1, "Channel": "Microsoft-Windows-Sysmon/Operational", "Hostname": "WORKSTATION5",
+         "Image": "C:\\Windows\\System32\\rundll32.exe", "OriginalFileName": "RUNDLL32.EXE", "User": "WORKSTATION5\\wardog",
+         "ParentImage": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+         "CommandLine": "\"C:\\Windows\\System32\\rundll32.exe\" C:\\windows\\System32\\comsvcs.dll MiniDump 756 C:\\Users\\wardog\\AppData\\Local\\Temp\\lsass-comsvcs.dmp full"}
+  - name: Security 4688 of the same command line (Mordor)
+    expect: alert
+    events:
+      - {"@timestamp": "2020-10-18T23:50:05.910Z", "EventID": 4688, "Channel": "Security", "SubjectUserName": "wardog",
+         "NewProcessName": "C:\\Windows\\System32\\rundll32.exe",
+         "CommandLine": "\"C:\\Windows\\System32\\rundll32.exe\" C:\\windows\\System32\\comsvcs.dll MiniDump 756 C:\\Users\\wardog\\AppData\\Local\\Temp\\lsass-comsvcs.dmp full"}
+  - name: an ordinary rundll32 call (Control Panel applet)
+    expect: no_alert
+    events:
+      - {"@timestamp": "2026-11-27T03:00:00Z", "EventID": 1, "Channel": "Microsoft-Windows-Sysmon/Operational", "Image": "C:\\Windows\\System32\\rundll32.exe",
+         "OriginalFileName": "RUNDLL32.EXE", "CommandLine": "C:\\Windows\\System32\\rundll32.exe shell32.dll,Control_RunDLL desk.cpl"}
+  - name: the dump command line in an event that is not a process creation (PowerShell 4104)
+    expect: no_alert
+    events:
+      - {"@timestamp": "2026-11-27T03:00:00Z", "EventID": 4104, "Channel": "Microsoft-Windows-PowerShell/Operational",
+         "CommandLine": "rundll32.exe C:\\windows\\System32\\comsvcs.dll MiniDump 756 C:\\temp\\out.dmp full"}
