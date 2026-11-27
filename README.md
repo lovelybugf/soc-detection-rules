@@ -67,7 +67,8 @@ pull request. Once the server runs a tag that has the rule, delete the page's co
 
 ## Release
 
-A tag is what servers run. After the change is merged and CI is green:
+A tag is what servers run. Every push to `main` whose checks and tests pass is tagged by the workflow `tag.yml` (`vYYYY.MM.DD`, then
+`.2`, `.3`... for later ones the same day), so a merged pull request becomes a tag without anyone typing it. To tag by hand instead:
 
 ```bash
 git tag -a v2026.11.27 -m "what changed" && git push origin v2026.11.27
@@ -75,7 +76,9 @@ git tag -a v2026.11.27 -m "what changed" && git push origin v2026.11.27
 
 ## On the Opsis server
 
-`/opt/opsis/rules-update.sh <tag>` fetches the tag, checks it with Opsis's own loader (which also understands `soc_threshold` and
+On the Detection rules page (admin), the **Git sync** box does both directions: **Pull from git** switches the server to a tag (same check as
+below, no restart), **Push to git** opens a pull request here with the rules written on the page. From the shell,
+`deploy/scripts/rules-update.sh <tag>` fetches the tag, checks it with Opsis's own loader (which also understands `soc_threshold` and
 `soc_pattern`), and only then switches `/opt/opsis/rules/current` to it and restarts the detector and the backend. The detector and the
-Detection rules page read that folder through `DETECTOR_RULES_DIR`. Rules added on the Detection rules page stay in the Opsis database;
-they are not in this repository.
+Detection rules page read that folder through `DETECTOR_RULES_DIR`. Rules added on the Detection rules page stay in the Opsis database
+until someone pushes them (Push to git, or `scripts/pull_from_opsis.py`).
