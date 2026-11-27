@@ -1,0 +1,24 @@
+title: Sudo Command Touching /etc/shadow (Linux)
+id: 7c1d4f52-9a3e-4b8d-8e21-5f0a6c3b9d14
+status: experimental
+description: |
+    A sudo log line of /var/log/secure that names /etc/shadow (reading or copying the password hashes). Written for this project; it reads the
+    fields of the Opsis soc-linux pipeline (event.action sudo, message) in logs-linux-*.
+references:
+    - https://attack.mitre.org/techniques/T1003/008/
+author: SOC lab
+date: 2026/11/27
+tags:
+    - attack.credential_access
+    - attack.t1003.008
+logsource:
+    product: linux
+    service: sudo
+detection:
+    selection:
+        event.action: sudo
+        message|contains: /etc/shadow
+    condition: selection
+falsepositives:
+    - An administrator checking or repairing accounts by hand
+level: high
